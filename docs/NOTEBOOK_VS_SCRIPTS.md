@@ -16,7 +16,7 @@ through every output the assignment asks for. We deliberately do **not** paste a
 | Visible outputs (tables, plots, logs) in one place for graders and for your uploads | weak (files only) | **best** | **best** |
 | Live demonstration (§3.6) and viva explanation | OK (CLI `predict`, `verify`) | **best** | **best** |
 | Easy GPU access for students (Colab) | needs a terminal cell | **best** | **best** |
-| Code review / git diffs | **best** | noisy JSON diffs | good (notebook is short, shipped without outputs) |
+| Code review / git diffs | **best** | noisy JSON diffs | good (the notebook is a thin front-end over the tested code) |
 | Maintainability | **best** | poor at ~2,000 lines | best |
 | Risk of violating the assignment | none | none, but untestable | none (checked automatically) |
 

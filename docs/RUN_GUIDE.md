@@ -15,7 +15,7 @@
 
 ## Where the files go (all platforms)
 ```
-sp-sbert-within-project/            <- the unzipped repo (keep this folder name or any name)
+group7-ps5-sbert-story-point-estimation/   <- the cloned repository (any folder name works)
 ├─ notebooks/Group7_PS5_SBERT_StoryPoints.ipynb   <- open this
 ├─ data/
 │   └─ TAWOS.sql  (or TAWOS.zip / .sql.gz)  OR  tawos_issues.csv      <- put the dataset here
@@ -34,11 +34,11 @@ The notebook carries its own copy of the code (embedded), so **no code dataset i
 6. Use **Save Version ▸ Save & Run All (Commit)** so it keeps running even if you close the browser. Download the two time-stamped zips and the executed notebook; finally paste your GitHub URL in Section 16 to build the report PDF.
 
 ## B) Google Colab
-1. Runtime ▸ Change runtime type ▸ **T4 GPU**. Upload `sp-sbert-within-project.zip` and the TAWOS file via the Files panel (left), then in a cell: `!unzip -q sp-sbert-within-project.zip && mkdir -p sp-sbert-within-project/data && mv TAWOS* sp-sbert-within-project/data/`.
-2. Open the notebook from the unzipped folder (or upload it), set `USE_GOOGLE_DRIVE = True` in Section 1 (survives disconnects), choose `config/quick.yaml`, **Runtime ▸ Run all**; when clean switch to `config/default.yaml`.
+1. Runtime ▸ Change runtime type ▸ **T4 GPU**. Clone the repository (`!git clone https://github.com/yaswanth230755/group7-ps5-sbert-story-point-estimation.git`) and `%cd` into it, put the TAWOS file (`.sql`, `.zip` or `tawos_issues.csv`) into its `data/` folder, then open `notebooks/Group7_PS5_SBERT_StoryPoints.ipynb`.
+2. In Section 1 set `USE_GOOGLE_DRIVE = True` (results survive disconnects). **Runtime ▸ Run all** runs the final configuration by default; for a quick trial uncomment the quick-run lines in Sections 1 and 6.
 
 ## C) Your own PC (Windows/macOS/Linux, no outside application)
-1. Install **Python 3.10–3.12** (python.org). Unzip the repo, open a terminal in it.
+1. Install **Python 3.10–3.12** (python.org). Clone the repository (or download it as a ZIP file and extract it) and open a terminal inside it.
 2. `python -m venv .venv` then activate (`.venv\Scripts\activate` on Windows, `source .venv/bin/activate` otherwise).
 3. `pip install -r requirements.txt jupyterlab` then `pip install -e . --no-deps`. (NVIDIA GPU: install the CUDA build of PyTorch from pytorch.org first.)
 4. Put the dataset in `data/`. Check everything: `python -m spsbert doctor` (shows GPU/RAM/disk/internet/data and a speed estimate).
@@ -70,32 +70,14 @@ Section 6 of the notebook prints a **time estimate** for the selected projects. 
 | Run too slow | read the speed benchmark in PREFLIGHT; use quick config, fewer `cnn.grid` values, `cnn.final_seeds=[42]` |
 | Disconnect mid-run | just Run All again: finished projects are cached |
 
-## Team plan (deadline: end of October 2026)
-| When | Who | What |
-|---|---|---|
-| Oct 22–23 | member with Kaggle/GPU | data prep + `MAX_PROJECTS=2` quick run; send `diagnostics_bundle.zip` for fixes |
-| Oct 23–24 | 2 members | repeat quick run on own PC/Colab to confirm reproducibility; review dataset table |
-| Oct 24–27 | GPU member | full run (`default.yaml`), upload `results_upload.zip` |
-| Oct 27–28 | all | review results/plots, write own discussion, build report (`python -m spsbert report`) |
-| Oct 29–30 | all | GitHub push, `python -m spsbert check`, viva practice (`docs/VIVA_GUIDE.md`) |
-| Oct 31 | — | buffer, no new changes |
 
-## Is running the notebook on Kaggle enough to finish the assignment?
-**It produces all the outputs, but the assignment (guideline §3.5–3.7) also needs:**
-1. the **GitHub repository** (push this folder; do not commit the raw data; `.gitignore` already excludes it) — you create it;
-2. the **final PDF report** with the GitHub link on page 1 — I build it from your uploaded outputs: `python -m spsbert report --github-url <your repo URL>`;
-3. your **own interpretation** in the discussion, and everyone able to explain the work (`docs/VIVA_GUIDE.md`).
+## What a complete submission contains
+The executed notebook alone is **not** the submission. Guideline §3.5–3.6 require:
+1. the **GitHub repository** (README, source code and notebook, configuration files, results with validation and test metrics, comparative tables and plots);
+2. the **final PDF report** with the repository link on page 1, stored in `report/`;
+3. a **demonstration** (Section 13 of the notebook, `python -m spsbert predict` and `python -m spsbert verify`), and every member able to explain the work (`docs/VIVA_GUIDE.md`).
 
-## What to attach here after the run (so I can check and build the report)
-| File | Where it comes from |
-|---|---|
-| `results_upload.zip` | last notebook cell (tables, figures, logs, metadata) |
-| `diagnostics_bundle.zip` | last notebook cell (warnings, preflight, logs) |
-| the **executed notebook** (`.ipynb` with outputs) | Kaggle: the version's Output tab, or File ▸ Download Notebook after the run; Jupyter/Colab: File ▸ Save, then download |
-| a screenshot or text of any red error | notebook output |
-Large raw data and `cache/` do **not** need to be sent.
-
-## Facts learned from the first real Kaggle trial (your executed notebook)
+## Observed facts from the real runs
 * The real TAWOS dump converted correctly: 458,232 issues, **65,427 with a story point, 39 projects** (smallest: 209 issues).
 * The assignment's short project names ("XD", "Nexus", ...) differ from TAWOS's ("Spring XD", "Sonatype Nexus", ...): `config/project_aliases.csv` maps them, so **all 39 projects** are now selected. Two of the 39 mappings (`Evergreen -> The MongoDB Engineering`, `C++ driver (Appcelerator) -> Aptana Studio`) were inferred by elimination: ask your instructor, and mention it in the report.
 * Output files appear at the **top level of `/kaggle/working`** (`<results-folder>_upload_<MMDD_HHMM>.zip`, `<results-folder>_diagnostics_bundle_<MMDD_HHMM>.zip`; send only the newest pair, ignore any file with `quick` in the name from earlier runs); click the refresh icon in the Output panel, or open **Save Version ▸ Output**.

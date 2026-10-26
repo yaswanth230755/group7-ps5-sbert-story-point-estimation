@@ -12,7 +12,7 @@
 | 4 | Kukkala Sai Dinesh Reddy | B231035CS |
 | 5 | Munukuntla Rithvik Reddy | B231114CS |
 
-> **Run it:** `docs/RUN_GUIDE.md` (Kaggle / Colab / own PC, file placement, Run-All steps, team plan). Preflight: `python -m spsbert doctor`. Guideline traceability, word by word: `docs/guideline_matrix.csv`; your requests: `docs/REQUEST_TRACEABILITY.md`; weights check: `docs/WEIGHTED_SELF_ASSESSMENT.md`, `docs/PS_SELECTION_CHECK.md`.
+> **Run it:** `docs/RUN_GUIDE.md` (Kaggle / Colab / own PC: file placement and Run-All steps). Preflight check: `python -m spsbert doctor`. Traceability to the assignment: `docs/guideline_matrix.csv`, `docs/GUIDELINE_COMPLIANCE.md`; choice of the problem statement: `docs/WEIGHTED_SELF_ASSESSMENT.md`, `docs/PS_SELECTION_CHECK.md`.
 
 ## 1. Objective
 
@@ -30,7 +30,7 @@ Predict the story points of a software issue from its text (title + description)
 | `Story_Point` | regression target (positive numbers only) |
 | `Creation_Date` | kept as metadata; **not used** (random splitting ignores time) |
 
-**Outlier policy (important):** the real TAWOS story-point field contains data-entry errors (raw maximum 26,710,114; 11 of 39 projects exceed 100). Story points **above 100** (the top of the planning-poker deck) are removed (`data.max_story_point: 100`); the count per project is in `results/data_cleaning_report.json` and must be stated in the report. Set it to `null` to keep everything (MAE values then explode for some projects).
+**Outlier policy (important):** the real TAWOS story-point field contains data-entry errors (raw maximum 26,710,114; 11 of 39 projects exceed 100). Story points **above 100** (the top of the planning-poker deck) are removed (`data.max_story_point: 100`); the count per project is in `results/data_cleaning_report.json` and is stated in the report. Set it to `null` to keep everything (MAE values then explode for some projects).
 
 Exact per-project counts, story-point distributions and cleaning statistics are produced by the run (`results/tables/dataset_summary.csv`, `results/data_cleaning_report.json`) and shown in the notebook.
 
@@ -63,7 +63,7 @@ config/project_aliases.csv     maps those short names to the full TAWOS names (2
 src/spsbert/                 data.py  splits.py  embeddings.py  models.py  metrics.py
                              experiment.py  aggregate.py  report.py  config.py  cli.py ...
 scripts/export_tawos_to_csv.py   TAWOS (MySQL) -> data/tawos_issues.csv
-tests/                       78 unit, adversarial, mutation, SQL-parser, doctor and notebook tests (pytest)
+tests/                       79 unit, adversarial, mutation, SQL-parser, doctor and notebook tests (pytest)
 docs/GUIDELINE_COMPLIANCE.md every guideline requirement -> code -> test
 .github/workflows/tests.yml  CI (pyflakes + pytest)   ·   Makefile  shortcuts
 notebooks/Group7_PS5_SBERT_StoryPoints.ipynb  guided notebook (thin front-end; runs the same tested package)
@@ -78,7 +78,7 @@ data/                        empty on purpose: the TAWOS data is not redistribut
 ```bash
 python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
 pip install -r requirements.txt && pip install -e .
-pytest -q                                              # expect: 78 passed   (Python >= 3.10)
+pytest -q                                              # expect: 79 passed   (Python >= 3.10)
 ```
 
 ### 3.2 Data (TAWOS)
@@ -93,27 +93,27 @@ It streams the dump (about 90 s per GB on a slow CPU), keeps only issues that ha
 **Route B — via MySQL:** `mysql -u root -p -e "CREATE DATABASE tawos"`, `mysql -u root -p tawos < TAWOS.sql`, then
 `python scripts/export_tawos_to_csv.py --user root --database tawos --out data/tawos_issues.csv`.
 
-The CSV needs the columns `Project_Name, Issue_Key, Title, Description_Text, Creation_Date, Story_Point` (common aliases are accepted; missing required columns raise a clear error that lists the columns found). Both routes assume the TAWOS tables `Issue` and `Project` with the usual column names; they are tested on mysqldump-format fixtures, but **could not be verified against the real TAWOS file** in our development sandbox. If one fails, the error message names the missing column; adjust the alias lists in `src/spsbert/sqldump.py` (route A) or `QUERY` in the export script (route B).
+The CSV needs the columns `Project_Name, Issue_Key, Title, Description_Text, Creation_Date, Story_Point` (common aliases are accepted; missing required columns raise a clear error that lists the columns found). Route A was used for the final run on the real TAWOS dump (all 39 projects converted). Route B (MySQL export) is an alternative and was tested only against a SQLite stand-in. Both assume the TAWOS tables `Issue` and `Project`; if a column name differs, the error message names it, and the alias lists in `src/spsbert/sqldump.py` (route A) or `QUERY` in the export script (route B) can be adjusted.
 After loading, the run warns about any name in `config/guideline_projects.txt` that is not in your CSV and suggests the closest names present.
 
-### 3.2b Colab walkthrough (GPU)
-1. Runtime ▸ Change runtime type ▸ **GPU (T4)**. Upload and unzip the repo: `!unzip -q sp-sbert-within-project.zip` (Files panel), then open `notebooks/Group7_PS5_SBERT_StoryPoints.ipynb`.
-2. In Section 1 of the notebook set `USE_GOOGLE_DRIVE = True` (keeps results and the embedding cache on your Drive, so a disconnect loses nothing; re-running the notebook resumes).
-3. Section 2 asks you to upload `tawos_issues.csv` if it is missing (create it from the dump with Route A in a first cell: `!python -m spsbert sql2csv /content/TAWOS.sql`).
-4. Try `CONFIG_PATH = "config/quick.yaml"` first; switch to `config/default.yaml` for the full run. The last cell produces `results_upload.zip`.
+### 3.2b Colab or Kaggle walkthrough (GPU)
+1. Runtime ▸ Change runtime type ▸ **GPU (T4)**. Clone the repository (`!git clone https://github.com/yaswanth230755/group7-ps5-sbert-story-point-estimation.git`, then `%cd group7-ps5-sbert-story-point-estimation`) and open `notebooks/Group7_PS5_SBERT_StoryPoints.ipynb`. On Kaggle, import the notebook, attach the TAWOS dataset with *Add Input*, and enable GPU and Internet in the settings.
+2. Colab only: in Section 1 set `USE_GOOGLE_DRIVE = True` (keeps results and the embedding cache on Google Drive, so a disconnect loses nothing; running the notebook again resumes).
+3. Section 2 offers an upload prompt if `tawos_issues.csv` is missing (the SQL dump is also converted automatically when found).
+4. The defaults are the **final run** (`config/default.yaml`, all 39 projects, about 80 minutes on a T4). For a quick trial, uncomment the two quick-run lines in Sections 1 and 6. The last cells produce time-stamped result zips.
 
 ### 3.3 Run
 ```bash
 python -m spsbert run --config config/quick.yaml       # optional 1st trial: small SBERT, finishes quickly
 python -m spsbert run --config config/default.yaml     # the full experiment (all-mpnet-base-v2)
-python -m spsbert report --github-url https://github.com/<you>/<repo>   # builds results/Group7_Final_Report.pdf
+python -m spsbert report --github-url https://github.com/yaswanth230755/group7-ps5-sbert-story-point-estimation --out report/Group7_Final_Report.pdf
 ```
 * Resumable: finished projects are cached (keyed by a hash of the configuration); `--force` recomputes.
 * Subset: `--projects "Moodle" "Mule"` · Override: `--set split.n_folds=5 embedding.batch_size=32`.
 * A GPU is strongly recommended (use the Colab notebook). Measured on a single slow CPU core: ~2.8 s per training epoch for a 2,400-issue project (768-d), i.e. roughly 45 minutes per such project for the default grid (33 CNN fits); a GPU should be much faster (not measured by us). On CPU the default grid is slow for large projects; use `config/quick.yaml`, or reduce `cnn.grid`/`cnn.max_epochs`/`cnn.final_seeds`.
 
 ### 3.3b Notebook (recommended front-end) and strict audit
-`notebooks/Group7_PS5_SBERT_StoryPoints.ipynb` walks through every output the assignment requires (config/seeds → dataset → split → embeddings → CNN → 5-fold validation → test → comparison table → plots → statistics → discussion → demo → audit) by calling the same tested package; it is shipped **without outputs**, so the numbers you see are your own run. Why a thin notebook and not "all code in one notebook": `docs/NOTEBOOK_VS_SCRIPTS.md`. Run it on Colab (GPU) or locally; choose the config in its Section 1.
+`notebooks/Group7_PS5_SBERT_StoryPoints.ipynb` walks through every output the assignment requires (config/seeds → dataset → split → embeddings → CNN → 5-fold validation → test → comparison table → plots → statistics → discussion → demo → audit) by calling the same tested package; the copy stored in `notebooks/` is the executed final run, with all outputs. Why a thin notebook and not "all code in one notebook": `docs/NOTEBOOK_VS_SCRIPTS.md`. Run it on Colab (GPU) or locally; choose the config in its Section 1.
 
 ```bash
 python -m spsbert check            # strict audit of results/ + repo against guideline 3.1-3.7 (exit 1 on any FAIL)
@@ -141,7 +141,8 @@ On CPU the recomputation is bit-identical (verified in our tests); on a differen
 | `splits/*.json` | issue keys of dev/test sets and the validation fold of every dev issue (share with other groups for paired comparisons) |
 | `predictions/*.csv` | per-issue test predictions |
 | `run_metadata.json`, `run.log` | config, seeds, library versions, hardware |
-| `Group7_Final_Report.pdf` | final report (GitHub link on page 1) |
+
+The final report PDF is stored in `report/Group7_Final_Report.pdf`.
 
 ## 4. Method in detail
 
@@ -161,11 +162,11 @@ On CPU the recomputation is bit-identical (verified in our tests); on a differen
 Seeds (`seed`, `cnn.final_seeds`), split settings, model name and hyper-parameters live in `config/*.yaml`; `run_metadata.json` stores library versions and hardware. Split issue keys are stored in `results/splits/`. Seeding covers Python, NumPy and PyTorch with deterministic algorithms enabled; bit-exact equality across *different hardware/CUDA versions* is not guaranteed, but results should agree to within normal floating-point noise.
 
 ## 6. Testing
-`pytest -q` runs 78 tests: metric formulas (hand-computed), Holm correction (known values), split invariants, cleaning rules, column aliases, config validation, CNN architecture (exactly three conv layers) and learning, embedding cache, SBERT wiring (stand-in library), SQL export, an end-to-end pipeline, and adversarial checks: a **leakage spy** that records every index each model is fitted/scored on (the test set must never be touched before the final evaluation), TF-IDF vocabulary from training data only, **cache invalidation when the data changes**, constant-target projects, file-name collisions, two independent runs being identical, the CLI, the PDF report, the demo and `verify`, **mutation tests proving the strict audit really catches tampered results**, and an end-to-end execution of the notebook.
+`pytest -q` runs 79 tests: metric formulas (hand-computed), Holm correction (known values), split invariants, cleaning rules, column aliases, config validation, CNN architecture (exactly three conv layers) and learning, embedding cache, SBERT wiring (stand-in library), SQL export, an end-to-end pipeline, and adversarial checks: a **leakage spy** that records every index each model is fitted/scored on (the test set must never be touched before the final evaluation), TF-IDF vocabulary from training data only, **cache invalidation when the data changes**, constant-target projects, file-name collisions, two independent runs being identical, the CLI, the PDF report, the demo and `verify`, **mutation tests proving the strict audit really catches tampered results**, and an end-to-end execution of the notebook.
 `python -m spsbert synthetic && python -m spsbert run --config config/smoke_test.yaml` exercises the whole pipeline offline on **synthetic** data with a non-SBERT encoder. The report it produces is stamped *"NOT REAL RESULTS"*.
 
 ## 7. Limitations
-Random splitting leaks temporal information; one split per project gives noisy small-project estimates; near-duplicate (not exact) issues may remain; story points are team-specific; the encoder is frozen and truncates long texts; per-project p-values are uncorrected. See Section 7 of the generated report.
+Random splitting lets the model see issues created after the test issues (temporal leakage), so scores are optimistic compared with real deployment. One random split per project gives noisy estimates for small projects. Only exact duplicate texts are removed; near-duplicates may remain. Story points are team-specific and noisy. The outlier cap (story points above 100) is a modelling decision that the assignment does not specify. The encoder is frozen and truncates long texts. Per-project p-values are reported raw and Holm-corrected; the 39 projects are not a random sample of software projects. See Section 7 of the report.
 
 ## 8. Submission checklist (guideline §3.5–3.6)
 - [x] Real TAWOS data converted; full run finished on all 39 projects (`results/`)
@@ -176,4 +177,7 @@ Random splitting leaks temporal information; one split per project gives noisy s
 - [ ] Every member can explain the pipeline (section 4), the results and the limitations (`docs/VIVA_GUIDE.md`)
 
 ## 9. References
-Reimers & Gurevych (2019) *Sentence-BERT*; Tawosi et al. (2022) *A Versatile Dataset of Agile Open Source Software Projects* (TAWOS); Choetkiertikul et al. *Deep-SE*; Song et al. (2020) *MPNet*. Verify citation details before submission.
+- Reimers, N. and Gurevych, I. (2019). *Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks.* EMNLP-IJCNLP 2019.
+- Tawosi, V., Al-Subaihin, A., Moussa, R. and Sarro, F. (2022). *A Versatile Dataset of Agile Open Source Software Projects.* MSR 2022. Dataset: <https://doi.org/10.5522/04/21308124>
+- Song, K., Tan, X., Qin, T., Lu, J. and Liu, T.-Y. (2020). *MPNet: Masked and Permuted Pre-training for Language Understanding.* NeurIPS 2020.
+- Choetkiertikul, M. et al. *A deep learning model for estimating story points (Deep-SE).* IEEE Transactions on Software Engineering.

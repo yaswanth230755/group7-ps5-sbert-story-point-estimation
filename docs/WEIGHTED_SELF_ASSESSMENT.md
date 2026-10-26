@@ -1,17 +1,16 @@
-# Our deliverables scored against the group's own weights (honest, with residual risk)
+# Deliverables scored against the group's selection weights
 
-Weights from the group's selection table (total 100 %). Status: **Strong** = evidence exists and is tested; **Open** = depends on the real run.
+The weights are those the group used to choose PS-5 (feasibility 20 %, reproducibility 20 %, dataset and split feasibility 15 %, leakage control 10 %, time and compute 10 %, report quality 10 %, viva readiness 10 %, research value 5 %). For each parameter: the evidence in this repository and the remaining risk.
 
-| Parameter (weight) | Evidence in this repo | Residual risk | Left for the group |
-|---|---|---|---|
-| Implementation feasibility (20 %) | Complete pipeline, 62 tests, runs end to end offline on synthetic data and via a Kaggle-style rehearsal; notebook executes top to bottom. **Strong** | Real SBERT download and real TAWOS dump were not testable in our sandbox; first real run may expose small schema/name issues | Quick run with `MAX_PROJECTS = 2`, send `diagnostics_bundle.zip` |
-| Experimental reliability and reproducibility (20 %) | Seeds, config hash, data hash, split files, versions stored; `verify` recomputes a project bit-identically on CPU; cache invalidated when data changes; audit recomputes metrics from saved predictions. **Strong** | GPU/CUDA versions may differ at floating-point noise (use `--tol 1e-3`) | Run `python -m spsbert verify --project <one>` after the full run |
-| Dataset and split feasibility (15 %) | Direct SQL-dump converter (no MySQL), column aliases, project-name suggestions, `min_issues` filter, exact 80:20 + 5 balanced folds with hard assertions. **Open** for the real dump | Real dump layout unverified; projects with few story-point issues are skipped (reported) | Check the dataset table (Section 2) and the cleaning report |
-| Validation and data-leakage control (10 %) | Leakage-spy test (test set never fitted/selected on), early stopping only on a hold-out of the training folds, TF-IDF/scaling fit on training data only, duplicate texts removed. **Strong**. Inherent weakness: random split leaks temporal information | Near-duplicates remain; optimistic scores vs deployment | State the limitation in the report (generated text already does) |
-| Time and compute requirements (10 %) | Frozen encoder cached on disk; resumable per project; speed benchmark + runtime estimate; `BATCH` runs with `merge`; `config/balanced.yaml` (about 2-3x cheaper); `quick.yaml`. **Strong** | Full default run may need several hours on a T4 | Pick the config from the printed estimate; say which one in the report |
-| Report and analytical quality (10 %) | PDF generated only from measured results; Table A/validation/test/macro tables, 5 figures, CIs, Holm-corrected tests, discussion that follows the numbers, limitations. **Open** until real results exist | Auto-text cannot replace the group's own interpretation | Add own insights after reading the results (notebook Section 12) |
-| Viva and demonstration readiness (10 %) | `docs/VIVA_GUIDE.md`, live `predict` and `verify`, audit output to explain, notebook shows every step. **Strong** | Members must actually rehearse | Everyone runs the notebook once and the viva Q&A |
-| Research value (5 %) | Four methods on identical splits (mean, median, TF-IDF, SBERT+Ridge, SBERT+CNN) give an honest answer to "is SBERT effective?" with CIs and significance. Modest by design (within-project, random split) | Lowest-scoring parameter for PS-5 | Optional: discuss in the report how PS-6 (temporal) would differ |
+| Parameter (weight) | Evidence | Remaining risk |
+|---|---|---|
+| Implementation feasibility (20 %) | Complete pipeline on the real TAWOS data (39 projects); 79 tests; GitHub CI green; the notebook runs end to end on Kaggle (about 80 min on a T4) | none known |
+| Reproducibility (20 %) | Seeds, configuration hash and data hash stored; three independent GPU runs gave bit-identical metrics, splits and predictions; `python -m spsbert verify` recomputes a project | different GPU or CUDA versions can differ at floating-point noise level (use `--tol 1e-3`) |
+| Dataset and split feasibility (15 %) | The real dump was converted (65,427 issues with a story point, 39 projects); 80:20 split and five balanced folds with hard assertions | two guideline project names matched by elimination (labels only) |
+| Validation and leakage control (10 %) | Leakage-spy test: the test set is never fitted on or used for selection; early stopping uses a hold-out of the training folds only; duplicate texts removed | random splitting leaks temporal information by design (stated as a limitation) |
+| Time and compute (10 %) | Cached embeddings, resumable per-project results, runtime estimate and a guard against unrealistic runs, batches and a cheaper configuration | none for the final run |
+| Report quality (10 %) | The report is generated from measured results only: tables, six figures, confidence intervals, Holm-corrected tests, rank test, discussion and limitations | the discussion needs the authors' own interpretation |
+| Viva readiness (10 %) | `docs/VIVA_GUIDE.md`, live `predict` and `verify`, the audit output, a notebook that shows every step | members must rehearse |
+| Research value (5 %) | Five methods on identical splits answer whether SBERT is effective relative to lexical and trivial baselines | modest by design: within-project, random split |
 
-See also `docs/PS_SELECTION_CHECK.md` (re-scoring of all 12 statements; PS-5 ranks #2, effectively tied with PS-6) and
-`docs/guideline_matrix.csv` (word-by-word assignment compliance).
+See also `docs/PS_SELECTION_CHECK.md` (all 12 statements re-scored with the same weights) and `docs/guideline_matrix.csv` (word-by-word assignment compliance).

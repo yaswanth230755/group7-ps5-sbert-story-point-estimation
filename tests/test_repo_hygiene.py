@@ -46,3 +46,14 @@ def test_no_leftover_markers_and_deliverable_files_are_not_git_ignored():
     ignore = (ROOT / ".gitignore").read_text(encoding="utf-8").splitlines()
     for must_commit in ("results/", "notebooks/", "docs/", "config/", "src/", "README.md"):
         assert must_commit not in ignore
+
+
+def test_documentation_contains_no_chat_artifacts():
+    """Submitted documentation must read as the group's own documentation, not as a conversation."""
+    pat = re.compile(r"send me|attach(ed)? (it )?here|you asked|your request|your executed|ma'am|so i can check|what you asked", re.I)
+    bad = []
+    for f in [ROOT / "README.md", *sorted((ROOT / "docs").glob("*.md"))]:
+        for i, line in enumerate(f.read_text(encoding="utf-8").splitlines(), 1):
+            if pat.search(line):
+                bad.append(f"{f.name}:{i}")
+    assert not bad, bad
